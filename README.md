@@ -7,21 +7,21 @@ The application enables administrators to manage mall information and operations
 Built using **Java, Spring Boot, Spring Security, PostgreSQL, and REST APIs**, MallMate combines centralized mall management with secure authentication, role-based authorization, and customer-friendly features.
 
 ## 📊 Project Statistics
+## 📊 Project Statistics
 
-|             Metric                |             Details              |
-|                                   |                                  |
-| Project Type                      | Web-Based Mall Management System |
-| Backend Framework                 | Spring Boot                      |
-| Programming Language              | Java                             |
-| User Roles                        | 5                                |
-| REST Controller Classes           | 12                               |
-| REST Controller Endpoint Mappings | 79                               |
-| Database                          | PostgreSQL                       |
-| Authentication & Authorization    | Spring Security                  |
-| Password Security                 | BCrypt Password Hashing          |
-| CSRF Protection                   | Configured using Spring Security |
-| API Architecture                  | RESTful APIs                     |
-| Frontend Technologies             | HTML, CSS, JavaScript            |
+| **Metric** | **Details** |
+|:--|:--|
+| Project Type | Web-Based Mall Management System |
+| Backend | Java, Spring Boot |
+| Frontend | HTML, CSS, JavaScript |
+| Database | PostgreSQL |
+| User Roles | 5 |
+| REST Controller Classes | 12 |
+| REST API Endpoint Mappings | 79 |
+| Security | Spring Security |
+| Password Hashing | BCrypt |
+| CSRF Protection | Spring Security |
+| API Architecture | RESTful APIs |
 
 *Endpoint count is based on the controller mappings in the current project backup. It represents controller mapping declarations, not necessarily 79 unique URLs, since different HTTP methods can share a URL.*
 
