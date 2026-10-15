@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5">
+  <title>MallMate | Staff Dashboard</title>
+  <link rel="stylesheet" href="staff-dashboard.css">
+  <script src="staff-dashboard.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#overview" aria-label="MallMate Staff Dashboard"><span class="brand-mark">M</span><span class="brand-copy"><strong>MallMate</strong><small>STAFF WORKSPACE</small></span></a>
+      <nav class="nav" aria-label="Staff navigation">
+        <a class="nav-link active" href="#overview" data-view="overview" title="Overview"><span class="nav-icon">⌂</span><span class="nav-label">Overview</span></a>
+        <a class="nav-link" href="#shops" data-view="shops" title="Shops directory"><span class="nav-icon">▣</span><span class="nav-label">Shops directory</span></a>
+        <a class="nav-link" href="#incidents" data-view="incidents" title="Incidents"><span class="nav-icon">⚑</span><span class="nav-label">Incidents</span></a>
+        <a class="nav-link" href="#maintenance" data-view="maintenance" title="Maintenance"><span class="nav-icon">⚒</span><span class="nav-label">Maintenance</span></a>
+        <a class="nav-link" href="#facilities" data-view="facilities" title="Facilities"><span class="nav-icon">▦</span><span class="nav-label">Facilities</span></a>
+        <a class="nav-link" href="#announcements" data-view="announcements" title="Announcements"><span class="nav-icon">▤</span><span class="nav-label">Announcements</span></a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="session-chip"><span class="session-dot"></span><span class="nav-label">Staff access</span></div>
+        <button class="logout-button" id="logoutButton" title="Sign out" type="button"><span class="nav-icon">↪</span><span class="nav-label">Sign out</span></button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="mobile-brand"><span class="brand-mark">M</span><strong>MallMate</strong></div>
+        <button class="icon-button menu-toggle" id="menuToggle" aria-label="Toggle sidebar" aria-expanded="true" title="Toggle sidebar" type="button">☰</button>
+        <div class="topbar-right">
+          <button class="profile-trigger" id="openProfile" type="button" aria-haspopup="dialog" aria-controls="profileModal" title="View your profile">
+            <span class="profile-avatar" id="profileAvatar">S</span>
+            <span class="profile-text"><strong id="profileName">Staff workspace</strong><small id="profileRole">STAFF</small></span>
+            <span class="role-pill">My profile ↗</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="page-heading" id="overview">
+          <div><p class="eyebrow">MALL OPERATIONS</p><h1>Staff Dashboard</h1><p class="subtitle">Your day-to-day mall operations, in one place.</p></div>
+          <div class="date-chip" id="todayLabel">Staff workspace</div>
+        </section>
+
+        <section class="hero">
+          <div><p class="eyebrow light">STAFF WORKSPACE</p><h2>Keep the mall running smoothly.</h2><p>Review incidents, check facilities, and stay up to date with mall announcements.</p></div>
+          <div class="hero-symbol">M</div>
+        </section>
+
+        <section class="stats-grid" aria-label="Overview statistics">
+          <article class="stat-card"><span class="stat-icon purple">▣</span><span class="stat-label">Shops listed</span><strong id="statShops">—</strong><small>Shop directory</small></article>
+          <article class="stat-card"><span class="stat-icon green">↗</span><span class="stat-label">Currently open</span><strong id="statOpenShops">—</strong><small>Based on shop hours</small></article>
+          <article class="stat-card"><span class="stat-icon orange">⚒</span><span class="stat-label">Under maintenance</span><strong id="statMaintenanceShops">—</strong><small>Maintenance flag enabled</small></article>
+          <article class="stat-card"><span class="stat-icon orange">⚑</span><span class="stat-label">Incidents</span><strong id="statIncidents">—</strong><small>Recorded incidents</small></article>
+          <article class="stat-card"><span class="stat-icon blue">⚒</span><span class="stat-label">Maintenance requests</span><strong id="statMaintenance">—</strong><small>Requests visible to staff</small></article>
+          <article class="stat-card"><span class="stat-icon green">▤</span><span class="stat-label">Announcements</span><strong id="statAnnouncements">—</strong><small>Active announcements</small></article>
+        </section>
+
+        <div class="notice" id="globalMessage" role="status" aria-live="polite" hidden></div>
+
+        <section class="panel quick-panel">
+          <div class="panel-heading"><div><p class="eyebrow">QUICK ACCESS</p><h2>What do you need to do?</h2><p class="panel-subtitle">Staff actions available with your current permissions.</p></div></div>
+          <div class="quick-actions">
+            <button class="quick-card" type="button" data-go="incidents"><span class="quick-icon red">⚑</span><strong>Report an incident</strong><small>Create a new incident report</small><span class="quick-arrow">↗</span></button>
+            <button class="quick-card" type="button" data-go="shops"><span class="quick-icon purple">▣</span><strong>Find a shop</strong><small>Browse the shop directory</small><span class="quick-arrow">↗</span></button>
+            <button class="quick-card" type="button" data-go="maintenance"><span class="quick-icon orange">⚒</span><strong>View maintenance</strong><small>Check current requests</small><span class="quick-arrow">↗</span></button>
+          </div>
+        </section>
+
+        <section class="panel" id="incidents">
+          <div class="panel-heading responsive-heading"><div><p class="eyebrow">SAFETY & OPERATIONS</p><h2>Incident reports</h2><p class="panel-subtitle">View incident records and report a new incident. Editing and deletion are not offered to staff.</p></div><div class="section-actions"><button class="primary-button" id="openIncidentForm" type="button">＋ Report incident</button><button class="secondary-button section-toggle" type="button" data-toggle-section="incidentsContent" aria-controls="incidentsContent" aria-expanded="false">View incidents</button></div></div>
+          <form id="incidentForm" class="form-card" hidden>
+            <div class="form-title"><div><h3>New incident report</h3><p>Submit the details for the operations team.</p></div><button type="button" class="icon-button close-form" id="closeIncidentForm" aria-label="Close form">×</button></div>
+            <div class="form-grid">
+              <label>Title<input name="title" maxlength="150" required placeholder="e.g. Water leakage near food court"></label>
+              <label>Incident type<input name="incidentType" maxlength="100" required placeholder="e.g. Safety, electrical, spill"></label>
+              <label>Severity<select name="severity" required><option value="LOW">Low</option><option value="MEDIUM" selected>Medium</option><option value="HIGH">High</option><option value="CRITICAL">Critical</option></select></label>
+              <label>Floor<select name="floorId" id="incidentFloor" required><option value="">Loading floors…</option></select></label>
+              <label class="full-span">Description<textarea name="description" rows="3" maxlength="2000" required placeholder="Describe what happened, where, and any immediate risk."></textarea></label>
+            </div>
+            <div class="form-actions"><button type="button" class="secondary-button" id="cancelIncidentForm">Cancel</button><button type="submit" class="primary-button" id="submitIncident">Submit report</button></div>
+          </form>
+          <div class="table-tools section-search-tools"><input id="incidentSearch" type="search" placeholder="Search incidents by title, type, floor, status…"><button class="secondary-button" type="button" id="searchIncidents">Search</button><select id="incidentSeverityFilter" aria-label="Filter incidents by severity"><option value="">All severities</option><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select><button class="secondary-button" type="button" id="refreshIncidents">Refresh</button></div>
+          <div class="section-content" id="incidentsContent" hidden>
+          <div class="table-wrap"><table><thead><tr><th>Incident</th><th>Type</th><th>Severity</th><th>Status</th><th>Floor</th><th>Reported</th></tr></thead><tbody id="incidentsBody"><tr><td colspan="6" class="empty">Loading incidents…</td></tr></tbody></table></div>
+          <div class="table-footer"><span id="incidentCount">Loading…</span></div>
+          </div>
+        </section>
+
+        <section class="panel" id="shops">
+          <div class="panel-heading"><div><p class="eyebrow">DIRECTORY</p><h2>Shop directory</h2><p class="panel-subtitle">Read-only shop directory with record status, live operating status, maintenance flag, and opening hours. Staff cannot change shop or maintenance status.</p></div><div class="section-actions"><button class="secondary-button" id="refreshShops" type="button">Refresh</button><button class="secondary-button section-toggle" type="button" data-toggle-section="shopsContent" aria-controls="shopsContent" aria-expanded="false">View shops</button></div></div>
+          <div class="table-tools section-search-tools">
+            <input id="shopSearch" type="search" placeholder="Search by shop, number, category, floor…" aria-label="Search shops">
+            <button class="secondary-button" type="button" id="searchShops">Search</button>
+            <select id="shopCategoryFilter" aria-label="Filter shops by category"><option value="">All categories</option></select>
+            <select id="shopRecordFilter" aria-label="Filter by shop record status"><option value="">All record statuses</option><option value="ACTIVE">Active records</option><option value="INACTIVE">Inactive records</option></select>
+          </div>
+          <div class="section-content" id="shopsContent" hidden>
+          <div class="table-wrap"><table class="shops-table"><thead><tr><th>Shop</th><th>Shop no.</th><th>Category</th><th>Floor</th><th>Record status</th><th>Operating status</th><th>Maintenance</th><th>Hours</th></tr></thead><tbody id="shopsBody"><tr><td colspan="8" class="empty">Loading shops…</td></tr></tbody></table></div>
+          <div class="table-footer"><span id="shopCount">Loading…</span></div>
+          </div>
+        </section>
+
+        <section class="panel" id="maintenance">
+          <div class="panel-heading"><div><p class="eyebrow">FACILITIES OPERATIONS</p><h2>Maintenance requests</h2><p class="panel-subtitle">Staff can review requests. Create, update, and delete controls are omitted unless the backend permissions explicitly allow them.</p></div><div class="section-actions"><button class="secondary-button" id="refreshMaintenance" type="button">Refresh</button><button class="secondary-button section-toggle" type="button" data-toggle-section="maintenanceContent" aria-controls="maintenanceContent" aria-expanded="false">View maintenance</button></div></div>
+          <div class="table-tools section-search-tools"><input id="maintenanceSearch" type="search" placeholder="Search requests by title, shop, category or status…"><button class="secondary-button" type="button" id="searchMaintenance">Search</button><select id="maintenanceStatusFilter" aria-label="Filter maintenance by status"><option value="">All statuses</option><option>PENDING</option><option>IN_PROGRESS</option><option>COMPLETED</option><option>REJECTED</option></select></div>
+          <div class="section-content" id="maintenanceContent" hidden>
+          <div class="table-wrap"><table><thead><tr><th>Request</th><th>Shop</th><th>Category</th><th>Priority</th><th>Status</th><th>Created</th></tr></thead><tbody id="maintenanceBody"><tr><td colspan="6" class="empty">Loading maintenance requests…</td></tr></tbody></table></div>
+          <div class="table-footer"><span id="maintenanceCount">Loading…</span></div>
+          </div>
+        </section>
+
+        <section class="panel" id="facilities">
+          <div class="panel-heading"><div><p class="eyebrow">MALL DIRECTORY</p><h2>Facilities</h2><p class="panel-subtitle">Browse facility locations and descriptions.</p></div><div class="section-actions"><button class="secondary-button" id="refreshFacilities" type="button">Refresh</button><button class="secondary-button section-toggle" type="button" data-toggle-section="facilitiesContent" aria-controls="facilitiesContent" aria-expanded="false">View facilities</button></div></div>
+          <div class="table-tools section-search-tools"><input id="facilitySearch" type="search" placeholder="Search facilities by name, type, location or floor…" aria-label="Search facilities"><button class="secondary-button" type="button" id="searchFacilities">Search</button><button class="secondary-button" type="button" id="clearFacilitySearch">Clear</button></div>
+          <div class="section-content" id="facilitiesContent" hidden>
+          <div class="table-wrap"><table><thead><tr><th>Facility</th><th>Type</th><th>Description</th><th>Location</th><th>Floor</th></tr></thead><tbody id="facilitiesBody"><tr><td colspan="5" class="empty">Loading facilities…</td></tr></tbody></table></div>
+          <div class="table-footer"><span id="facilityCount">Loading…</span></div>
+          </div>
+        </section>
+
+        <section class="panel" id="announcements">
+          <div class="panel-heading"><div><p class="eyebrow">MALL UPDATES</p><h2>Announcements</h2><p class="panel-subtitle">Active announcements available from the backend.</p></div><div class="section-actions"><button class="secondary-button" id="refreshAnnouncements" type="button">Refresh</button><button class="secondary-button section-toggle" type="button" data-toggle-section="announcementsContent" aria-controls="announcementsContent" aria-expanded="false">View announcements</button></div></div>
+          <div class="section-content" id="announcementsContent" hidden>
+          <div class="announcement-list" id="announcementsList"><div class="empty-card">Loading announcements…</div></div>
+          </div>
+        </section>
+
+        <footer class="footer"><span>© <span id="year"></span> MallMate</span><span>Staff workspace · Role-based access</span></footer>
+      </div>
+    </main>
+  </div>
+
+  <!-- Read-only profile modal: values are populated from GET /api/users/me. -->
+  <div class="modal-backdrop" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle" hidden>
+    <section class="modal-card profile-modal-card">
+      <button class="modal-close" type="button" data-close-modal="profileModal" aria-label="Close profile">×</button>
+      <div class="modal-symbol profile-symbol">♙</div>
+      <p class="eyebrow">YOUR ACCOUNT</p>
+      <h2 id="profileModalTitle">My profile</h2>
+      <p class="modal-description">Your registered details are shown below. Profile information is read-only.</p>
+      <div class="profile-details" id="profileDetails"><p class="empty-card">Loading your profile…</p></div>
+      <div class="modal-actions"><button class="secondary-button" type="button" data-close-modal="profileModal">Close</button></div>
+    </section>
+  </div>
+
+  <!-- Custom confirmation modal; no browser window.confirm popup. -->
+  <div class="modal-backdrop" id="logoutModal" role="dialog" aria-modal="true" aria-labelledby="logoutModalTitle" aria-describedby="logoutModalDescription" hidden>
+    <section class="modal-card logout-modal-card">
+      <button class="modal-close" type="button" data-close-modal="logoutModal" aria-label="Close sign-out confirmation">×</button>
+      <div class="modal-symbol logout-symbol">↪</div>
+      <p class="eyebrow">END SESSION</p>
+      <h2 id="logoutModalTitle">Sign out of MallMate?</h2>
+      <p class="modal-description" id="logoutModalDescription">Are you sure you want to sign out of your staff account? You will need to sign in again to access your dashboard.</p>
+      <div class="modal-actions"><button class="secondary-button" id="cancelLogout" type="button">Cancel</button><button class="primary-button danger-button" id="confirmLogout" type="button">Yes, sign out</button></div>
+      <p class="modal-error" id="logoutModalError" role="alert" hidden></p>
+    </section>
+  </div>
+</body>
+</html>

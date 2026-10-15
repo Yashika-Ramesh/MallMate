@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4f46e5">
+    <title>MallMate | Admin Dashboard</title>
+    <link rel="stylesheet" href="admin-dashboard.css">
+    <script src="admin-dashboard.js" defer></script>
+</head>
+<body>
+    <aside class="sidebar" id="dashboardSidebar">
+        <div class="sidebar-brand-row">
+            <a class="brand" href="#overview" aria-label="MallMate dashboard home">
+                <span class="brand-icon">M</span><span>MallMate</span>
+            </a>
+        </div>
+        <p class="menu-label">MAIN MENU</p>
+        <nav aria-label="Main navigation">
+            <a class="nav-link active" href="#overview" data-tooltip="Dashboard" aria-label="Dashboard">Dashboard</a>
+            <a class="nav-link" href="#shops" data-tooltip="Shop Management" aria-label="Shop Management">Shop Management</a>
+            <a class="nav-link" href="#users" data-tooltip="User Management" aria-label="User Management">User Management</a>
+            <a class="nav-link" href="#floors" data-tooltip="Floors" aria-label="Floors">Floors</a>
+            <a class="nav-link" href="#categories" data-tooltip="Shop Categories" aria-label="Shop Categories">Shop Categories</a>
+            <a class="nav-link" href="#tenants" data-tooltip="Tenants" aria-label="Tenants">Tenants</a>
+            <a class="nav-link" href="#facilities" data-tooltip="Facilities" aria-label="Facilities">Facilities</a>
+            <a class="nav-link" href="#incidents" data-tooltip="Incidents" aria-label="Incidents">Incidents</a>
+            <a class="nav-link" href="#maintenance" data-tooltip="Maintenance" aria-label="Maintenance">Maintenance</a>
+            <a class="nav-link" href="#announcements" data-tooltip="Announcements" aria-label="Announcements">Announcements</a>
+        </nav>
+        <button id="logoutButton" class="logout-button" type="button" data-tooltip="Sign Out" aria-label="Sign Out">Sign Out</button>
+    </aside>
+
+    <main class="main-content" id="overview">
+        <header class="topbar">
+            <button id="menuToggleButton" class="menu-toggle" type="button" aria-label="Collapse navigation menu" aria-expanded="true" aria-controls="dashboardSidebar"><span></span><span></span><span></span></button>
+            <div class="topbar-heading">
+                <p class="eyebrow">MALL MANAGEMENT</p>
+                <h1>Admin Dashboard</h1>
+                <p class="subtitle">Manage your mall operations from one place.</p>
+            </div>
+            <div class="profile-menu-wrap">
+                <button class="admin-badge" id="profileMenuButton" type="button" aria-expanded="false" aria-controls="profileDropdown"><span class="avatar">A</span><span>Administrator</span><span class="profile-chevron" aria-hidden="true">▾</span></button>
+                <div class="profile-dropdown" id="profileDropdown" hidden><p class="profile-dropdown-title">Administrator</p><p class="profile-dropdown-subtitle">MallMate management account</p><button type="button" id="profileSignOutButton">Sign out</button></div>
+            </div>
+        </header>
+
+        <div id="globalMessage" class="global-message" role="status" aria-live="polite" hidden></div>
+
+        <section class="welcome-banner">
+            <div>
+                <p>YOUR MALL AT A GLANCE</p>
+                <h2>Everything under control.</h2>
+                <span>Keep your directory, services and operations up to date.</span>
+            </div>
+            <div class="banner-icon" aria-hidden="true">M</div>
+        </section>
+
+        <section class="stats-grid" aria-label="Mall statistics">
+            <article class="stat-card"><span class="stat-icon purple">S</span><p>Total Shops</p><h2 id="shopCount">—</h2><span>Registered shops</span></article>
+            <article class="stat-card"><span class="stat-icon blue">U</span><p>Total Users</p><h2 id="userCount">—</h2><span>Registered accounts</span></article>
+            <article class="stat-card"><span class="stat-icon orange">F</span><p>Facilities</p><h2 id="facilityCount">—</h2><span>Mall facilities</span></article>
+            <article class="stat-card"><span class="stat-icon green">I</span><p>Incidents</p><h2 id="incidentCount">—</h2><span>Reported incidents</span></article>
+        </section>
+
+        <section class="management-section" id="users">
+            <div class="section-heading">
+                <div><p class="eyebrow">ACCESS CONTROL</p><h2>User Management</h2><p>Create accounts and assign a role.</p></div>
+                <div class="button-group"><button id="createUserButton" class="primary-button" type="button">+ Create User</button><button class="secondary-button toggle-button" data-target="userResults" type="button">View Users</button></div>
+            </div>
+            <div class="search-row"><input type="search" id="userSearchInput" placeholder="Search users by name, username, email or role..." aria-label="Search users"><button class="secondary-button" type="button" data-search-button="userSearchInput">Search</button><button class="text-button" type="button" data-clear-search="userSearchInput">Clear</button></div>
+            <div class="form-host" id="userFormHost"></div>
+            <div class="data-panel" id="userResults" hidden>Select “View Users” to load registered accounts.</div>
+        </section>
+
+        <section class="management-section" id="shops">
+            <div class="section-heading">
+                <div><p class="eyebrow">DIRECTORY</p><h2>Shop Management</h2><p>Create, search, view, edit and remove shops. Updates are saved through the secured backend API.</p></div>
+                <div class="button-group"><button class="primary-button create-button" data-create="shops" type="button">+ Add Shop</button><button class="secondary-button toggle-button" data-target="shopResults" data-load="/api/shops" type="button">View Shops</button></div>
+            </div>
+            <div class="search-row shop-search-row"><input type="search" id="shopSearchInput" placeholder="Search shops by name..." aria-label="Search shops by name" data-search-panel="shopResults" data-search-url="/api/shops/search" data-search-base="/api/shops" data-search-param="name" data-search-label="Shop"><select id="shopCategoryFilter" aria-label="Filter shops by category"><option value="">All categories</option><option>Electronics</option><option>Clothing</option><option>Books &amp; Stationery</option><option>Footwear</option><option>Jewellery</option><option>Beauty &amp; Cosmetics</option><option>Supermarket</option><option>Food &amp; Beverages</option><option>Bakery &amp; Sweets</option><option>Sports &amp; Fitness</option><option>Toys &amp; Games</option><option>Home &amp; Furniture</option><option>Home Appliances</option><option>Mobile &amp; Accessories</option><option>Watches &amp; Accessories</option><option>Gifts &amp; Crafts</option><option>Pharmacy</option><option>Optical Store</option><option>Travel &amp; Luggage</option><option>Kids &amp; Baby Products</option></select><button id="shopSearchButton" class="secondary-button" type="button">Search</button><button id="clearShopSearchButton" class="text-button" type="button">Clear</button></div>
+            <div class="form-host" id="shopsFormHost"></div>
+            <div class="data-panel" id="shopResults" hidden>Select “View Shops” to load the shop directory.</div>
+        </section>
+
+        <section class="management-section" id="floors">
+            <div class="section-heading">
+                <div><p class="eyebrow">MALL STRUCTURE</p><h2>Floors</h2><p>Manage the floors that shops and facilities belong to.</p></div>
+                <div class="button-group"><button class="primary-button create-button" data-create="floors" type="button">+ Add Floor</button><button class="secondary-button toggle-button" data-target="floorResults" data-load="/api/floors" type="button">View Floors</button></div>
+            </div>
+            <div class="search-row"><input type="search" id="floorSearchInput" placeholder="Search floors by number, name or description..." aria-label="Search floors" data-search-panel="floorResults" data-search-url="/api/floors" data-search-label="Floor"><button class="secondary-button" type="button" data-search-button="floorSearchInput">Search</button><button class="text-button" type="button" data-clear-search="floorSearchInput">Clear</button></div>
+            <div class="form-host" id="floorsFormHost"></div><div class="data-panel" id="floorResults" hidden>Select “View Floors” to load floors.</div>
+        </section>
+
+        <section class="management-section" id="categories">
+            <div class="section-heading">
+                <div><p class="eyebrow">SHOP DIRECTORY</p><h2>Shop Categories</h2><p>Organize shops by category.</p></div>
+                <div class="button-group"><button class="primary-button create-button" data-create="categories" type="button">+ Add Category</button><button class="secondary-button toggle-button" data-target="categoryResults" data-load="/api/categories" type="button">View Categories</button></div>
+            </div>
+            <div class="search-row"><input type="search" id="categorySearchInput" placeholder="Search categories by name..." aria-label="Search categories" data-search-panel="categoryResults" data-search-url="/api/categories/search" data-search-base="/api/categories" data-search-param="name" data-search-label="Category"><button class="secondary-button" type="button" data-search-button="categorySearchInput">Search</button><button class="text-button" type="button" data-clear-search="categorySearchInput">Clear</button></div>
+            <div class="form-host" id="categoriesFormHost"></div><div class="data-panel" id="categoryResults" hidden>Select “View Categories” to load categories.</div>
+        </section>
+
+        <section class="management-section" id="tenants">
+            <div class="section-heading">
+                <div><p class="eyebrow">LEASES &amp; CONTACTS</p><h2>Tenants</h2><p>Maintain tenant contact and lease information.</p></div>
+                <div class="button-group"><button class="primary-button create-button" data-create="tenants" type="button">+ Add Tenant</button><button class="secondary-button toggle-button" data-target="tenantResults" data-load="/api/tenants" type="button">View Tenants</button></div>
+            </div>
+            <div class="search-row"><input type="search" id="tenantSearchInput" placeholder="Search tenants by business name..." aria-label="Search tenants" data-search-panel="tenantResults" data-search-url="/api/tenants/search" data-search-base="/api/tenants" data-search-param="businessName" data-search-label="Tenant"><button class="secondary-button" type="button" data-search-button="tenantSearchInput">Search</button><button class="text-button" type="button" data-clear-search="tenantSearchInput">Clear</button></div>
+            <div class="form-host" id="tenantsFormHost"></div><div class="data-panel" id="tenantResults" hidden>Select “View Tenants” to load tenants.</div>
+        </section>
+
+        <section class="management-section" id="facilities">
+            <div class="section-heading">
+                <div><p class="eyebrow">MALL SERVICES</p><h2>Facilities</h2><p>Register and maintain mall facilities.</p></div>
+                <div class="button-group"><button class="primary-button create-button" data-create="facilities" type="button">+ Add Facility</button><button class="secondary-button toggle-button" data-target="facilityResults" data-load="/api/facilities" type="button">View Facilities</button></div>
+            </div>
+            <div class="search-row"><input type="search" id="facilitySearchInput" placeholder="Search facilities by name..." aria-label="Search facilities" data-search-panel="facilityResults" data-search-url="/api/facilities/search" data-search-base="/api/facilities" data-search-param="name" data-search-label="Facility"><button class="secondary-button" type="button" data-search-button="facilitySearchInput">Search</button><button class="text-button" type="button" data-clear-search="facilitySearchInput">Clear</button></div>
+            <div class="form-host" id="facilitiesFormHost"></div><div class="data-panel" id="facilityResults" hidden>Select “View Facilities” to load facilities.</div>
+        </section>
+
+        <section class="management-section" id="incidents">
+            <div class="section-heading">
+                <div><p class="eyebrow">OPERATIONS</p><h2>Incidents</h2><p>Report and review incidents across the mall.</p></div>
+                <div class="button-group"><button class="primary-button create-button" id="reportIncidentButton" data-create="incidents" type="button">+ Report Incident</button><button class="secondary-button toggle-button" data-target="incidentResults" data-load="/api/incidents" type="button">View Incidents</button></div>
+            </div>
+            <div class="search-row"><input type="search" id="incidentSearchInput" placeholder="Search incidents by title, type, severity or status..." aria-label="Search incidents" data-search-panel="incidentResults" data-search-url="/api/incidents" data-search-label="Incident"><button class="secondary-button" type="button" data-search-button="incidentSearchInput">Search</button><button class="text-button" type="button" data-clear-search="incidentSearchInput">Clear</button></div>
+            <div class="form-host" id="incidentFormHost"></div><div class="data-panel" id="incidentResults" hidden>Select “View Incidents” to load incident records.</div>
+        </section>
+
+        <section class="management-section" id="maintenance">
+            <div class="section-heading">
+                <div><p class="eyebrow">FACILITIES &amp; REPAIRS</p><h2>Maintenance</h2><p>Create and review maintenance requests separately from incidents.</p></div>
+                <div class="button-group"><button class="primary-button create-button" id="addMaintenanceButton" data-create="maintenance" type="button">+ Add Maintenance</button><button class="secondary-button toggle-button" data-target="maintenanceResults" data-load="/api/maintenance" type="button">View Maintenance</button></div>
+            </div>
+            <div class="search-row"><input type="search" id="maintenanceSearchInput" placeholder="Search maintenance by title, category, priority or status..." aria-label="Search maintenance" data-search-panel="maintenanceResults" data-search-url="/api/maintenance" data-search-label="Maintenance record"><button class="secondary-button" type="button" data-search-button="maintenanceSearchInput">Search</button><button class="text-button" type="button" data-clear-search="maintenanceSearchInput">Clear</button></div>
+            <div class="form-host" id="maintenanceFormHost"></div><div class="data-panel" id="maintenanceResults" hidden>Select “View Maintenance” to load maintenance records.</div>
+        </section>
+
+        <section class="management-section" id="announcements">
+            <div class="section-heading">
+                <div><p class="eyebrow">COMMUNICATION</p><h2>Announcements</h2><p>Publish important mall updates.</p></div>
+                <div class="button-group"><button class="primary-button create-button" data-create="announcements" type="button">+ Create Announcement</button><button class="secondary-button toggle-button" data-target="announcementResults" data-load="/api/announcements" type="button">View Announcements</button></div>
+            </div>
+            <div class="search-row"><input type="search" id="announcementSearchInput" placeholder="Search announcements by title or message..." aria-label="Search announcements" data-search-panel="announcementResults" data-search-url="/api/announcements" data-search-label="Announcement"><button class="secondary-button" type="button" data-search-button="announcementSearchInput">Search</button><button class="text-button" type="button" data-clear-search="announcementSearchInput">Clear</button></div>
+            <div class="form-host" id="announcementsFormHost"></div><div class="data-panel" id="announcementResults" hidden>Select “View Announcements” to load announcements.</div>
+        </section>
+
+        <footer>© 2026 MallMate · Mall Management System</footer>
+    <div class="admin-profile-backdrop" id="adminProfileModal" role="dialog" aria-modal="true" aria-labelledby="adminProfileModalTitle" aria-hidden="true" hidden>
+        <section class="admin-profile-card">
+            <button class="admin-profile-x" id="closeAdminProfileButton" type="button" aria-label="Close profile">×</button>
+            <div class="admin-profile-symbol" id="adminProfileAvatar">A</div>
+            <p class="eyebrow">ADMIN ACCOUNT</p>
+            <h2 id="adminProfileModalTitle">My profile</h2>
+            <p class="admin-profile-description">Your registered account details. Profile information is read-only.</p>
+            <div class="admin-profile-identity"><strong id="adminProfileName">Administrator</strong><span id="adminProfileRole">ADMIN</span></div>
+            <div class="admin-profile-details" id="adminProfileDetails"><p class="admin-profile-loading">Loading your profile…</p></div>
+            <div class="admin-profile-actions"><button class="secondary-button" id="adminProfileCloseFooter" type="button">Close</button><button class="danger-button" id="adminProfileSignOutButton" type="button">Sign out</button></div>
+        </section>
+    </div>
+
+    <div id="confirmModal" class="modal-backdrop" hidden aria-hidden="true">
+        <section class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle" aria-describedby="confirmModalMessage">
+            <div class="confirm-modal-icon" aria-hidden="true">!</div>
+            <h2 id="confirmModalTitle">Are you sure?</h2>
+            <p id="confirmModalMessage">Please confirm this action.</p>
+            <div class="confirm-modal-actions"><button id="confirmCancelButton" class="secondary-button" type="button">Cancel</button><button id="confirmProceedButton" class="danger-button" type="button">Confirm</button></div>
+        </section>
+    </div>
+
+    </main>
+</body>
+</html>

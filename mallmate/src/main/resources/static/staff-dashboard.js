@@ -1,0 +1,442 @@
+/* MallMate Staff Dashboard — Iteration 1
+   Uses only endpoints exposed by the current backend. The UI does not expose admin-only writes. */
+"use strict";
+
+const $ = (selector, root = document) => root.querySelector(selector);
+const state = {shops: [], incidents: [], maintenance: [], facilities: [], announcements: [], floors: []};
+const globalMessage = $("#globalMessage");
+
+const esc = (value) => String(value ?? "").replace(/[&<>"']/g, ch => ({
+  "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+}[ch]));
+
+function showMessage(message, type = "info") {
+  globalMessage.textContent = message;
+  globalMessage.className = `notice ${type}`;
+  globalMessage.hidden = false;
+  globalMessage.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+function clearMessage() { globalMessage.hidden = true; globalMessage.textContent = ""; }
+
+
+async function getCsrf() {
+  const response = await fetch("/api/auth/csrf", {
+    credentials: "same-origin"
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      "Could not obtain the security token. Refresh and sign in again."
+    );
+  }
+
+  const cookie = document.cookie
+    .split("; ")
+    .find(c => c.startsWith("XSRF-TOKEN="));
+
+  if (!cookie) {
+    throw new Error(
+      "CSRF token cookie not found. Refresh and sign in again."
+    );
+  }
+
+  return {
+    headerName: "X-XSRF-TOKEN",
+    token: decodeURIComponent(
+      cookie.substring("XSRF-TOKEN=".length)
+    )
+  };
+}
+
+async function apiRequest(url, options = {}) {
+  const method = (options.method || "GET").toUpperCase();
+  const headers = new Headers(options.headers || {});
+  if (options.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+  const config = {...options, method, headers, credentials:"same-origin"};
+  if (!["GET","HEAD","OPTIONS","TRACE"].includes(method)) {
+    const csrf = await getCsrf();
+    headers.set(csrf.headerName || "X-XSRF-TOKEN", csrf.token);
+  }
+  const response = await fetch(url, config);
+  if (response.status === 204) return null;
+  const contentType = response.headers.get("content-type") || "";
+  const payload = contentType.includes("application/json") ? await response.json().catch(() => null) : await response.text().catch(() => "");
+  if (!response.ok) {
+    if (response.status === 401) throw new Error("Your session is not authenticated. Sign in with a STAFF account and reopen this dashboard.");
+    if (response.status === 403) throw new Error("Access denied. This action is not permitted for the current role.");
+    throw new Error(payload?.message || payload?.detail || payload || `Request failed (${response.status})`);
+  }
+  return payload;
+}
+function asArray(data) { return Array.isArray(data) ? data : []; }
+function dateText(value) {
+  if (!value) return "—";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? esc(value) : date.toLocaleString([], {dateStyle:"medium", timeStyle:"short"});
+}
+function badge(value) {
+  const label = String(value || "Unknown").replaceAll("_"," ");
+  const cls = String(value || "").toLowerCase().replaceAll("_","-").replaceAll(" ","-");
+  return `<span class="status-badge status-${esc(cls)}">${esc(label)}</span>`;
+}
+function setCount(id, value, noun) { $(id).textContent = `${value} ${noun}${value === 1 ? "" : "s"}`; }
+function emptyRow(cols, message) { return `<tr><td class="empty" colspan="${cols}">${esc(message)}</td></tr>`; }
+
+async function loadShops() {
+  try {
+    state.shops = asArray(await apiRequest("/api/shops"));
+    // Build the category filter from the categories actually present in the shop directory.
+    const categorySelect = $("#shopCategoryFilter");
+    const selectedCategory = categorySelect.value;
+    const categories = [...new Set(state.shops.map(shop => String(shop.categoryName || "").trim()).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b));
+    categorySelect.innerHTML = '<option value="">All categories</option>' + categories.map(category =>
+      `<option value="${esc(category)}">${esc(category)}</option>`
+    ).join("");
+    if (categories.includes(selectedCategory)) categorySelect.value = selectedCategory;
+    // These fields are supplied by ShopResponseDTO; status and operatingStatus are intentionally separate.
+    $("#statShops").textContent = state.shops.length;
+    $("#statOpenShops").textContent = state.shops.filter(s => String(s.operatingStatus || "").toUpperCase() === "OPEN").length;
+    $("#statMaintenanceShops").textContent = state.shops.filter(s => s.underMaintenance === true || String(s.operatingStatus || "").toUpperCase() === "UNDER_MAINTENANCE").length;
+    renderShops();
+  } catch (e) {
+    $("#shopsBody").innerHTML = emptyRow(8, e.message);
+    $("#statShops").textContent = "—";
+    $("#statOpenShops").textContent = "—";
+    $("#statMaintenanceShops").textContent = "—";
+  }
+}
+function renderShops() {
+  const query = $("#shopSearch").value.trim().toLowerCase();
+  const selectedCategory = $("#shopCategoryFilter").value.trim().toLowerCase();
+  const recordStatus = $("#shopRecordFilter").value.toUpperCase();
+  const rows = state.shops.filter(s => {
+    const haystack = [s.name,s.shopNumber,s.categoryName,s.floorName,s.floorNumber,s.description,s.status,s.operatingStatus,s.underMaintenance,s.openingTime,s.closingTime].join(" ").toLowerCase();
+    const category = String(s.categoryName || "").trim().toLowerCase();
+    const record = String(s.status || "UNKNOWN").toUpperCase();
+    return haystack.includes(query) && (!selectedCategory || category === selectedCategory) && (!recordStatus || record === recordStatus);
+  });
+  $("#shopsBody").innerHTML = rows.length ? rows.map(s => {
+    const maintenance = s.underMaintenance === true;
+    const opStatus = s.operatingStatus || (recordStatus === "INACTIVE" ? "CLOSED" : "UNKNOWN");
+    return `<tr>
+      <td><span class="primary-cell">${esc(s.name || "Unnamed shop")}</span><span class="sub-cell">${esc(s.description || "")}</span></td>
+      <td>${esc(s.shopNumber || "—")}</td>
+      <td>${esc(s.categoryName || "—")}</td>
+      <td>${esc(s.floorName || (s.floorNumber != null ? `Floor ${s.floorNumber}` : "—"))}</td>
+      <td>${badge(s.status)}</td>
+      <td>${badge(opStatus)}</td>
+      <td>${maintenance ? badge("UNDER_MAINTENANCE") : '<span class="maintenance-no">No</span>'}</td>
+      <td>${esc(s.openingTime || "—")} – ${esc(s.closingTime || "—")}</td>
+    </tr>`;
+  }).join("") : emptyRow(8, "No shops match your search or filters.");
+  setCount("#shopCount", rows.length, "shop");
+}
+
+async function loadFloors() {
+  try {
+    state.floors = asArray(await apiRequest("/api/floors"));
+    $("#incidentFloor").innerHTML = '<option value="">Select floor</option>' + state.floors.map(f =>
+      `<option value="${esc(f.id)}">${esc(f.name || `Floor ${f.floorNumber ?? f.id}`)}${f.floorNumber != null ? ` · ${esc(f.floorNumber)}` : ""}</option>`
+    ).join("");
+  } catch (e) {
+    $("#incidentFloor").innerHTML = '<option value="">Floors unavailable</option>';
+    console.warn("Staff floor list unavailable:", e.message);
+  }
+}
+async function loadIncidents() {
+  try {
+    state.incidents = asArray(await apiRequest("/api/incidents"));
+    renderIncidents();
+    $("#statIncidents").textContent = state.incidents.length;
+  } catch (e) {
+    $("#incidentsBody").innerHTML = emptyRow(6, e.message);
+    $("#statIncidents").textContent = "—";
+  }
+}
+function renderIncidents() {
+  const q = $("#incidentSearch").value.trim().toLowerCase();
+  const severity = $("#incidentSeverityFilter").value.toLowerCase();
+  const rows = state.incidents.filter(i => {
+    const hay = [i.title,i.description,i.incidentType,i.status,i.floorNumber,i.reportedByName].join(" ").toLowerCase();
+    return hay.includes(q) && (!severity || String(i.severity || "").toLowerCase() === severity);
+  });
+  $("#incidentsBody").innerHTML = rows.length ? rows.map(i => `<tr>
+    <td><span class="primary-cell">${esc(i.title)}</span><span class="sub-cell">${esc(i.description || "")}</span></td>
+    <td>${esc(i.incidentType || "—")}</td><td>${badge(i.severity)}</td><td>${badge(i.status)}</td>
+    <td>${i.floorNumber == null ? "—" : `Floor ${esc(i.floorNumber)}`}</td>
+    <td>${dateText(i.reportedAt)}</td>
+  </tr>`).join("") : emptyRow(6, "No incidents match your search.");
+  setCount("#incidentCount", rows.length, "incident");
+}
+function setIncidentForm(open) {
+  $("#incidentForm").hidden = !open;
+  if (open) $("#incidentForm").scrollIntoView({behavior:"smooth",block:"center"});
+}
+async function submitIncident(event) {
+  event.preventDefault();
+  clearMessage();
+  const form = event.currentTarget;
+  const values = new FormData(form);
+  const payload = {
+    title: String(values.get("title") || "").trim(),
+    description: String(values.get("description") || "").trim(),
+    incidentType: String(values.get("incidentType") || "").trim(),
+    severity: String(values.get("severity") || "MEDIUM"),
+    floorId: Number(values.get("floorId"))
+  };
+  if (!payload.floorId) { showMessage("Please select a floor before submitting.", "error"); return; }
+  const button = $("#submitIncident");
+  button.disabled = true; button.textContent = "Submitting…";
+  try {
+    await apiRequest("/api/incidents", {method:"POST", body:JSON.stringify(payload)});
+    form.reset();
+    setIncidentForm(false);
+    await loadIncidents();
+    showMessage("Incident report submitted successfully.", "success");
+  } catch (e) {
+    showMessage(`Could not submit incident: ${e.message}`, "error");
+  } finally {
+    button.disabled = false; button.textContent = "Submit report";
+  }
+}
+
+async function loadMaintenance() {
+  try {
+    state.maintenance = asArray(await apiRequest("/api/maintenance"));
+    renderMaintenance();
+    $("#statMaintenance").textContent = state.maintenance.length;
+  } catch (e) {
+    $("#maintenanceBody").innerHTML = emptyRow(6, e.message);
+    $("#statMaintenance").textContent = "—";
+  }
+}
+function renderMaintenance() {
+  const q = $("#maintenanceSearch").value.trim().toLowerCase();
+  const status = $("#maintenanceStatusFilter").value.toLowerCase();
+  const rows = state.maintenance.filter(m => {
+    const hay = [m.title,m.description,m.category,m.priority,m.status,m.shopName].join(" ").toLowerCase();
+    return hay.includes(q) && (!status || String(m.status || "").toLowerCase() === status);
+  });
+  $("#maintenanceBody").innerHTML = rows.length ? rows.map(m => `<tr>
+    <td><span class="primary-cell">${esc(m.title)}</span><span class="sub-cell">${esc(m.description || "")}</span></td>
+    <td>${esc(m.shopName || "—")}</td><td>${esc(m.category || "—")}</td><td>${badge(m.priority)}</td>
+    <td>${badge(m.status)}</td><td>${dateText(m.createdAt)}</td>
+  </tr>`).join("") : emptyRow(6, "No maintenance requests match your search.");
+  setCount("#maintenanceCount", rows.length, "request");
+}
+
+async function loadFacilities({notify = false} = {}) {
+  const button = $("#refreshFacilities");
+  const oldLabel = button.textContent;
+  button.disabled = true; button.textContent = "Refreshing…";
+  try {
+    state.facilities = asArray(await apiRequest("/api/facilities"));
+    renderFacilities();
+    if (notify) showMessage("Facilities refreshed successfully.", "success");
+  } catch (e) {
+    $("#facilitiesBody").innerHTML = emptyRow(5, e.message);
+    $("#facilityCount").textContent = "Facilities unavailable";
+    if (notify) showMessage(`Could not refresh facilities: ${e.message}`, "error");
+  } finally { button.disabled = false; button.textContent = oldLabel; }
+}
+function renderFacilities() {
+  const q = $("#facilitySearch").value.trim().toLowerCase();
+  const rows = state.facilities.filter(f => [f.name, f.type, f.description, f.locationDescription, f.floorNumber].join(" ").toLowerCase().includes(q));
+  $("#facilitiesBody").innerHTML = rows.length ? rows.map(f => `<tr>
+    <td><span class="primary-cell">${esc(f.name || "Facility")}</span></td>
+    <td>${esc(f.type || "General facility")}</td>
+    <td><span class="sub-cell">${esc(f.description || "No description provided.")}</span></td>
+    <td>${esc(f.locationDescription || "Location not specified")}</td>
+    <td>${f.floorNumber == null ? "—" : esc(f.floorNumber)}</td>
+  </tr>`).join("") : emptyRow(5, "No facilities match your search.");
+  setCount("#facilityCount", rows.length, "facility");
+}
+async function loadAnnouncements() {
+  try {
+    state.announcements = asArray(await apiRequest("/api/announcements"));
+    renderAnnouncements();
+    $("#statAnnouncements").textContent = state.announcements.length;
+  } catch (e) {
+    $("#announcementsList").innerHTML = `<div class="empty-card">${esc(e.message)}</div>`;
+    $("#statAnnouncements").textContent = "—";
+  }
+}
+function renderAnnouncements() {
+  const rows = state.announcements.filter(a => a.active !== false);
+  $("#announcementsList").innerHTML = rows.length ? rows.map(a => `<article class="announcement-card">
+    <span class="announcement-icon">▤</span><div class="announcement-content">
+      <h3>${esc(a.title || "Announcement")}</h3><p>${esc(a.message || "")}</p>
+      <div class="announcement-meta"><span>Audience: ${esc(a.targetAudience || "All")}</span><span>Published: ${dateText(a.createdAt)}</span>${a.expiresAt ? `<span>Expires: ${dateText(a.expiresAt)}</span>` : ""}${a.createdByName ? `<span>By ${esc(a.createdByName)}</span>` : ""}</div>
+    </div></article>`).join("") : '<div class="empty-card">No active announcements right now.</div>';
+}
+async function loadProfile() {
+  try {
+    const me = await apiRequest("/api/users/me");
+    state.profile = me;
+    const name = me.name || me.fullName || me.username || "Staff member";
+    $("#profileName").textContent = name;
+    $("#profileAvatar").textContent = name.trim().charAt(0).toUpperCase() || "S";
+    $("#profileRole").textContent = me.role || "STAFF";
+    renderProfileDetails();
+  } catch (e) {
+    state.profileError = e.message;
+    $("#profileDetails").innerHTML = `<p class="notice error">${esc(e.message)}</p>`;
+    console.info("Could not load profile:", e.message);
+  }
+}
+function renderProfileDetails() {
+  const me = state.profile;
+  if (!me) return;
+  const fields = [
+    ["Full name", me.name || me.fullName],
+    ["Username", me.username],
+    ["Email address", me.email],
+    ["Phone number", me.phone || me.phoneNumber],
+    ["Role", me.role || "STAFF"],
+    ["Account status", me.active === false ? "Inactive" : "Active"]
+  ];
+  $("#profileDetails").innerHTML = fields.map(([label, value]) => `
+    <div class="profile-detail-row"><span>${esc(label)}</span><strong>${esc(value || "Not provided")}</strong></div>`).join("");
+}
+function openModal(id) {
+  const modal = document.getElementById(id);
+  if (!modal) return;
+  modal.hidden = false;
+  document.body.classList.add("modal-open");
+  const focusTarget = modal.querySelector("button:not([disabled])");
+  if (focusTarget) focusTarget.focus();
+}
+function closeModal(id) {
+  const modal = document.getElementById(id);
+  if (!modal) return;
+  modal.hidden = true;
+  if (!document.querySelector(".modal-backdrop:not([hidden])")) document.body.classList.remove("modal-open");
+}
+function openLogoutModal() {
+  $("#logoutModalError").hidden = true;
+  $("#logoutModalError").textContent = "";
+  openModal("logoutModal");
+}
+async function logout() {
+  const button = $("#confirmLogout");
+  const label = button.textContent;
+  button.disabled = true;
+  button.textContent = "Signing out…";
+  $("#cancelLogout").disabled = true;
+  $("#logoutModalError").hidden = true;
+  try {
+    await apiRequest("/api/auth/logout", {method:"POST"});
+    window.location.href = "/index.html";
+  } catch (e) {
+    $("#logoutModalError").textContent = `Could not complete sign out: ${e.message}`;
+    $("#logoutModalError").hidden = false;
+  } finally {
+    button.disabled = false;
+    button.textContent = label;
+    $("#cancelLogout").disabled = false;
+  }
+}
+async function refreshWithFeedback(buttonSelector, loader, label) {
+  const button = $(buttonSelector);
+  const original = button.textContent;
+  button.disabled = true; button.textContent = "Refreshing…";
+  try { await loader(); showMessage(`${label} refreshed successfully.`, "success"); }
+  catch (e) { showMessage(`Could not refresh ${label.toLowerCase()}: ${e.message}`, "error"); }
+  finally { button.disabled = false; button.textContent = original; }
+}
+function activateNavigation() {
+  document.querySelectorAll("[data-view]").forEach(link => link.addEventListener("click", () => {
+    document.querySelectorAll("[data-view]").forEach(item => item.classList.toggle("active", item === link));
+    $("#sidebar").classList.remove("mobile-open");
+  }));
+  document.querySelectorAll("[data-go]").forEach(button => button.addEventListener("click", () => {
+    const target = button.dataset.go;
+    document.querySelector(`.nav-link[data-view="${target}"]`)?.click();
+    document.getElementById(target)?.scrollIntoView({behavior:"smooth"});
+  }));
+  $("#menuToggle").addEventListener("click", () => {
+    const sidebar = $("#sidebar");
+    if (window.matchMedia("(max-width: 850px)").matches) {
+      sidebar.classList.toggle("mobile-open");
+      $("#menuToggle").setAttribute("aria-expanded", String(sidebar.classList.contains("mobile-open")));
+    } else {
+      document.body.classList.toggle("sidebar-collapsed");
+      $("#menuToggle").setAttribute("aria-expanded", String(!document.body.classList.contains("sidebar-collapsed")));
+    }
+  });
+}
+function setSectionVisible(contentId, visible = true) {
+  const target = document.getElementById(contentId);
+  if (!target) return;
+  target.hidden = !visible;
+  const button = document.querySelector(`[data-toggle-section="${contentId}"]`);
+  if (button) {
+    const sectionName = button.dataset.toggleLabel || button.textContent.replace(/^(View|Close) /i, "");
+    button.textContent = `${visible ? "Close" : "View"} ${sectionName}`;
+    button.setAttribute("aria-expanded", String(visible));
+  }
+}
+function wireSectionToggles() {
+  document.querySelectorAll("[data-toggle-section]").forEach(button => {
+    button.addEventListener("click", () => {
+      const target = document.getElementById(button.dataset.toggleSection);
+      if (!target) return;
+      setSectionVisible(target.id, target.hidden);
+    });
+  });
+}
+function wireEvents() {
+  wireSectionToggles();
+  $("#shopSearch").addEventListener("input", renderShops);
+  $("#searchShops").addEventListener("click", () => { renderShops(); setSectionVisible("shopsContent"); });
+  $("#shopSearch").addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); renderShops(); setSectionVisible("shopsContent"); } });
+  $("#shopCategoryFilter").addEventListener("change", renderShops);
+  $("#shopRecordFilter").addEventListener("change", renderShops);
+  $("#incidentSearch").addEventListener("input", renderIncidents);
+  $("#searchIncidents").addEventListener("click", () => { renderIncidents(); setSectionVisible("incidentsContent"); });
+  $("#incidentSearch").addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); renderIncidents(); setSectionVisible("incidentsContent"); } });
+  $("#incidentSeverityFilter").addEventListener("change", renderIncidents);
+  $("#maintenanceSearch").addEventListener("input", renderMaintenance);
+  $("#searchMaintenance").addEventListener("click", () => { renderMaintenance(); setSectionVisible("maintenanceContent"); });
+  $("#maintenanceSearch").addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); renderMaintenance(); setSectionVisible("maintenanceContent"); } });
+  $("#maintenanceStatusFilter").addEventListener("change", renderMaintenance);
+  $("#refreshShops").addEventListener("click", () => refreshWithFeedback("#refreshShops", loadShops, "Shops"));
+  $("#refreshIncidents").addEventListener("click", () => refreshWithFeedback("#refreshIncidents", loadIncidents, "Incidents"));
+  $("#refreshMaintenance").addEventListener("click", () => refreshWithFeedback("#refreshMaintenance", loadMaintenance, "Maintenance requests"));
+  $("#refreshFacilities").addEventListener("click", () => loadFacilities({notify:true}));
+  $("#refreshAnnouncements").addEventListener("click", () => refreshWithFeedback("#refreshAnnouncements", loadAnnouncements, "Announcements"));
+  $("#facilitySearch").addEventListener("input", renderFacilities);
+  $("#searchFacilities").addEventListener("click", () => { renderFacilities(); setSectionVisible("facilitiesContent"); });
+  $("#facilitySearch").addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); renderFacilities(); setSectionVisible("facilitiesContent"); } });
+  $("#clearFacilitySearch").addEventListener("click", () => { $("#facilitySearch").value = ""; renderFacilities(); setSectionVisible("facilitiesContent"); $("#facilitySearch").focus(); });
+  $("#openIncidentForm").addEventListener("click", () => setIncidentForm(true));
+  $("#closeIncidentForm").addEventListener("click", () => setIncidentForm(false));
+  $("#cancelIncidentForm").addEventListener("click", () => { $("#incidentForm").reset(); setIncidentForm(false); });
+  $("#incidentForm").addEventListener("submit", submitIncident);
+  $("#logoutButton").addEventListener("click", openLogoutModal);
+  $("#confirmLogout").addEventListener("click", logout);
+  $("#cancelLogout").addEventListener("click", () => closeModal("logoutModal"));
+  $("#openProfile").addEventListener("click", async () => {
+    openModal("profileModal");
+    if (!state.profile && !state.profileError) await loadProfile();
+  });
+  document.querySelectorAll("[data-close-modal]").forEach(button => button.addEventListener("click", () => closeModal(button.dataset.closeModal)));
+  document.querySelectorAll(".modal-backdrop").forEach(modal => modal.addEventListener("click", event => {
+    if (event.target === modal) closeModal(modal.id);
+  }));
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      const opened = document.querySelector(".modal-backdrop:not([hidden])");
+      if (opened) closeModal(opened.id);
+    }
+  });
+}
+async function init() {
+  $("#year").textContent = new Date().getFullYear();
+  $("#todayLabel").textContent = new Date().toLocaleDateString([], {weekday:"short", month:"short", day:"numeric", year:"numeric"});
+  activateNavigation(); wireEvents();
+  // Each section handles its own 401/403 so one unavailable endpoint won't blank the whole dashboard.
+  await Promise.all([loadProfile(), loadShops(), loadFloors(), loadIncidents(), loadMaintenance(), loadFacilities(), loadAnnouncements()]);
+}
+document.addEventListener("DOMContentLoaded", init);

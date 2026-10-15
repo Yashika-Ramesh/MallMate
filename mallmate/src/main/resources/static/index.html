@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MallMate | Login</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <main class="login-container">
+        <section class="login-left">
+            <a class="brand brand-link" href="index.html" aria-label="MallMate home">
+                <span class="brand-icon">M</span><span>MallMate</span>
+            </a>
+            <div class="welcome-content">
+                <p class="eyebrow">SMART MALL MANAGEMENT</p>
+                <h1>Everything your mall needs, in one place.</h1>
+                <p class="welcome-description">Discover shops, explore facilities and stay connected with your mall through one unified platform.</p>
+            </div>
+            <p class="left-footer">Simplifying mall visits, every day.</p>
+        </section>
+        <section class="login-right">
+            <div class="login-card">
+                <div class="mobile-brand">MallMate</div>
+                <p class="login-label">WELCOME BACK</p>
+                <h2>Sign in to your account</h2>
+                <p class="login-subtitle">Enter your credentials to continue.</p>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" placeholder="Enter your username" autocomplete="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+                    </div>
+                    <p id="errorMessage" class="error-message" role="alert" aria-live="polite"></p>
+                    <button type="submit" id="loginButton">Sign In</button>
+                </form>
+                <p class="signup-prompt">New to MallMate? <a href="register.html">Create a customer account</a></p>
+                <p class="security-note">Secure access for authorized MallMate users.</p>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

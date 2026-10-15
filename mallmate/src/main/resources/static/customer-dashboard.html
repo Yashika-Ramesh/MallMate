@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#172554">
+  <title>MallMate | Customer Dashboard</title>
+  <link rel="stylesheet" href="customer-dashboard.css">
+  <script src="customer-dashboard.js" defer></script>
+</head>
+<body>
+  <div class="mobile-scrim" id="mobileScrim"></div>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#overview" aria-label="MallMate customer home">
+        <span class="brand-mark">M</span><span class="brand-copy"><strong>MallMate</strong><small>CUSTOMER SPACE</small></span>
+      </a>
+      <div class="nav-caption">EXPLORE</div>
+      <nav class="nav" aria-label="Customer navigation">
+        <a class="nav-link active" href="#overview" data-view="overview" title="Overview"><span class="nav-icon">⌂</span><span class="nav-label">Overview</span></a>
+        <a class="nav-link" href="#shops" data-view="shops" title="Shop directory"><span class="nav-icon">▦</span><span class="nav-label">Shop directory</span></a>
+        <a class="nav-link" href="#facilities" data-view="facilities" title="Facilities"><span class="nav-icon">⌖</span><span class="nav-label">Facilities</span></a>
+        <a class="nav-link" href="#report" data-view="report" title="Report an issue"><span class="nav-icon">⚑</span><span class="nav-label">Report an issue</span></a>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-note"><span class="note-icon">✦</span><div><strong>Enjoy your visit</strong><p>Find shops and useful places around the mall.</p></div></div>
+      <button class="logout-button" id="logoutButton" type="button"><span class="nav-icon">↪</span><span class="nav-label">Sign out</span></button>
+      <div class="sidebar-foot">MALLMATE · CUSTOMER ACCESS</div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div class="topbar-left"><button class="icon-button menu-button" id="menuButton" type="button" aria-label="Collapse navigation" aria-expanded="true" title="Collapse navigation">☰</button><div><div class="eyebrow">CUSTOMER PORTAL</div><div class="breadcrumb">MallMate <span>/</span> <strong id="breadcrumbLabel">Overview</strong></div></div></div>
+        <div class="topbar-actions"><div class="secure-pill"><span class="secure-dot"></span> Customer access</div><button class="profile-trigger" id="profileTrigger" type="button" aria-label="Open profile"><span class="avatar" id="avatarInitials">C</span><span class="profile-trigger-copy"><strong id="headerName">Customer</strong><small>My profile</small></span><span class="chevron">⌄</span></button></div>
+        <div class="profile-popover hidden" id="profilePopover"><div class="popover-head"><span class="avatar large" id="popoverInitials">C</span><div><strong id="popoverName">Customer</strong><small id="popoverEmail">Your MallMate account</small></div></div><button type="button" id="viewProfileButton">View profile details <span>→</span></button><button type="button" id="popoverLogout">Sign out <span>↗</span></button></div>
+      </header>
+
+      <div class="page-content">
+        <section class="view active" id="view-overview" data-page="overview">
+          <div class="welcome-banner"><div class="welcome-copy"><div class="welcome-kicker"><span class="sparkle">✦</span> YOUR MALL, MADE SIMPLE</div><h1>Good to see you<span class="accent-dot">.</span><br><span id="welcomeName">there</span></h1><p>Discover stores, find facilities, and make your mall visit smoother.</p><div class="welcome-actions"><button class="button button-light" data-go="shops" type="button">Explore shops <span>→</span></button><button class="button button-ghost" data-go="facilities" type="button">Find facilities</button></div></div><div class="banner-art" aria-hidden="true"><div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div><div class="art-building"><div class="building-roof"></div><div class="building-sign">MALL<span>MATE</span></div><div class="building-windows"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="building-door"></div></div><span class="art-star star-one">✦</span><span class="art-star star-two">✧</span><span class="art-dot dot-one"></span><span class="art-dot dot-two"></span></div></div>
+          <div class="section-heading"><div><div class="eyebrow">YOUR QUICK GUIDE</div><h2>What would you like to do?</h2><p>Everything you need for a more convenient visit.</p></div></div>
+          <div class="quick-grid">
+            <button class="quick-card shop-quick" data-go="shops" type="button"><span class="quick-icon">▦</span><span class="quick-card-title">Browse shops</span><span class="quick-card-copy">Search by name, category, or shop number.</span><span class="quick-arrow">↗</span></button>
+            <button class="quick-card facility-quick" data-go="facilities" type="button"><span class="quick-icon">⌖</span><span class="quick-card-title">Find facilities</span><span class="quick-card-copy">Locate helpful amenities and services.</span><span class="quick-arrow">↗</span></button>
+            <button class="quick-card report-quick" data-go="report" type="button"><span class="quick-icon">⚑</span><span class="quick-card-title">Report an issue</span><span class="quick-card-copy">Let the mall team know about a concern.</span><span class="quick-arrow">↗</span></button>
+          </div>
+          <div class="section-heading section-heading-row"><div><div class="eyebrow">DISCOVER</div><h2>Shops around the mall</h2><p>Explore the directory and find your next stop.</p></div><button class="text-button" data-go="shops" type="button">View all shops <span>→</span></button></div>
+          <div class="shop-grid" id="featuredShops"><div class="loading-card">Loading shop directory…</div></div>
+          <div class="bottom-tip"><span class="tip-icon">✧</span><div><strong>A little help goes a long way</strong><p>Use the directory search to find a store or facility by name.</p></div><button class="text-button" data-go="facilities" type="button">Explore facilities →</button></div>
+        </section>
+
+        <section class="view" id="view-shops" data-page="shops">
+          <div class="page-title-row"><div><div class="eyebrow">MALL DIRECTORY</div><h1>Find your next favourite<span class="accent-dot">.</span></h1><p>Browse stores by name, category, or shop number.</p></div><span class="title-bubble">▦</span></div>
+          <div class="search-panel"><label class="search-box"><span>⌕</span><input id="shopSearch" type="search" placeholder="Search shops, categories, shop numbers…" autocomplete="off"><kbd>SEARCH</kbd></label><label class="filter-select"><span>Category</span><select id="shopCategory"><option value="">All categories</option></select></label><label class="filter-select"><span>Floor</span><select id="shopFloor"><option value="">All floors</option></select></label></div>
+          <div class="results-meta"><span id="shopResultCount">Loading shops…</span><button class="subtle-button" id="clearShopFilters" type="button">Clear filters</button></div>
+          <div class="shop-grid directory-grid" id="shopDirectory"><div class="loading-card">Loading shop directory…</div></div>
+          <div class="empty-state hidden" id="shopEmpty"><span>⌕</span><h3>No shops found</h3><p>Try another name or clear your filters.</p></div>
+        </section>
+
+        <section class="view" id="view-facilities" data-page="facilities">
+          <div class="page-title-row"><div><div class="eyebrow">VISITOR ESSENTIALS</div><h1>Find your way around<span class="accent-dot">.</span></h1><p>Discover facilities and helpful amenities across the mall.</p></div><span class="title-bubble facility-bubble">⌖</span></div>
+          <div class="facility-intro"><div><strong>Make your visit easier</strong><p>Search for a facility or browse the available services below.</p></div><div class="facility-mini-icon">✦</div></div>
+          <label class="search-box facility-search"><span>⌕</span><input id="facilitySearch" type="search" placeholder="Search facilities by name, type, or location…" autocomplete="off"><kbd>SEARCH</kbd></label>
+          <div class="results-meta"><span id="facilityResultCount">Loading facilities…</span><button class="subtle-button" id="clearFacilitySearch" type="button">Clear search</button></div>
+          <div class="facility-grid" id="facilityDirectory"><div class="loading-card">Loading facilities…</div></div>
+          <div class="empty-state hidden" id="facilityEmpty"><span>⌖</span><h3>No facilities found</h3><p>Try a different search term.</p></div>
+        </section>
+
+        <section class="view" id="view-report" data-page="report">
+          <div class="page-title-row"><div><div class="eyebrow">HELP US IMPROVE</div><h1>Report an issue<span class="accent-dot">.</span></h1><p>Share a concern so the mall team can follow up.</p></div><span class="title-bubble report-bubble">⚑</span></div>
+          <div class="report-layout"><div class="report-info"><div class="report-illustration"><span class="report-ring ring-a"></span><span class="report-ring ring-b"></span><span class="report-flag">⚑</span></div><h2>Your feedback matters.</h2><p>Give us a few details about what happened and where it occurred. Please avoid sharing sensitive personal information.</p><div class="report-assurance"><span>✓</span><div><strong>Sent to the mall team</strong><small>Your report will be recorded with your signed-in account.</small></div></div></div>
+            <form class="report-form" id="incidentForm" novalidate><div class="form-head"><div><div class="eyebrow">NEW REPORT</div><h2>Issue details</h2></div><span class="required-note">* Required</span></div><div class="form-message hidden" id="incidentMessage" role="status"></div>
+              <label class="field"><span>Issue title <b>*</b></span><input id="incidentTitle" name="title" maxlength="150" placeholder="e.g. Spill near the food court" required></label>
+              <div class="field-row"><label class="field"><span>Issue type <b>*</b></span><select id="incidentType" name="incidentType" required><option value="">Choose type</option><option>Cleanliness</option><option>Safety concern</option><option>Facility issue</option><option>Lost and found</option><option>Accessibility</option><option>Customer service</option><option>Other</option></select></label><label class="field"><span>Severity <b>*</b></span><select id="incidentSeverity" name="severity" required><option value="">Choose severity</option><option value="LOW">Low</option><option value="MEDIUM">Medium</option><option value="HIGH">High</option><option value="CRITICAL">Critical</option></select></label></div>
+              <label class="field"><span>Floor / location <b>*</b></span><select id="incidentFloor" name="floorId" required><option value="">Loading floors…</option></select><small>Select the floor where the issue occurred.</small></label>
+              <label class="field"><span>Description <b>*</b></span><textarea id="incidentDescription" name="description" rows="5" maxlength="2000" placeholder="Tell us what happened and where on the floor…" required></textarea><small class="char-count"><span id="descriptionCount">0</span>/2000 characters</small></label>
+              <button class="button button-primary submit-button" id="submitIncident" type="submit">Submit report <span>→</span></button><p class="form-footnote">Submitting means the mall team can review the information you provide.</p>
+            </form></div>
+        </section>
+
+        <section class="view" id="view-profile" data-page="profile">
+          <div class="page-title-row"><div><div class="eyebrow">YOUR ACCOUNT</div><h1>My profile<span class="accent-dot">.</span></h1><p>Review your account details. This page is read-only.</p></div><span class="title-bubble">◉</span></div>
+          <div class="profile-layout"><div class="profile-summary"><div class="profile-avatar" id="profileAvatar">C</div><h2 id="profileFullName">Customer</h2><p id="profileUsername">@customer</p><span class="role-badge"><span></span> Customer account</span><div class="profile-summary-line"></div><p class="profile-summary-note">Your details are managed securely by MallMate.</p></div><div class="profile-details"><div class="details-heading"><div><div class="eyebrow">PERSONAL INFORMATION</div><h2>Account details</h2></div><span class="readonly-pill">⌑ Read only</span></div><div class="detail-row"><span class="detail-icon">♙</span><div><small>Full name</small><strong id="detailName">—</strong></div></div><div class="detail-row"><span class="detail-icon">＠</span><div><small>Username</small><strong id="detailUsername">—</strong></div></div><div class="detail-row"><span class="detail-icon">✉</span><div><small>Email address</small><strong id="detailEmail">—</strong></div></div><div class="detail-row"><span class="detail-icon">☎</span><div><small>Phone number</small><strong id="detailPhone">—</strong></div></div><div class="detail-row"><span class="detail-icon">✓</span><div><small>Account status</small><strong id="detailStatus">—</strong></div></div><div class="detail-row"><span class="detail-icon">♧</span><div><small>Account role</small><strong id="detailRole">Customer</strong></div></div><div class="profile-help"><span>✦</span><p>Need to update your details? Contact the mall administrator for assistance.</p></div></div></div>
+        </section>
+        <footer class="page-footer"><span>© MallMate · A smoother mall experience</span><span><i></i> Customer portal</span></footer>
+      </div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="confirm-overlay hidden" id="logoutConfirm"><div class="confirm-card"><div class="confirm-icon">↪</div><h2>Sign out of MallMate?</h2><p>You'll need to log in again to access your customer space.</p><div class="confirm-actions"><button class="button button-soft" id="cancelLogout" type="button">Stay signed in</button><button class="button button-primary" id="confirmLogout" type="button">Yes, sign out</button></div></div></div>
+</body>
+</html>
