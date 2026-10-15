@@ -7,7 +7,6 @@ The application enables administrators to manage mall information and operations
 Built using **Java, Spring Boot, Spring Security, PostgreSQL, and REST APIs**, MallMate combines centralized mall management with secure authentication, role-based authorization, and customer-friendly features.
 
 ## 📊 Project Statistics
-## 📊 Project Statistics
 
 | **Metric** | **Details** |
 |:--|:--|
